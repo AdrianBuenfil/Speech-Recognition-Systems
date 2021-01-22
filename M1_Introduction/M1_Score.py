@@ -1,5 +1,6 @@
 import argparse
 import wer
+import re
 
 # create a function that calls wer.string_edit_distance() on every utterance
 # and accumulates the errors for the corpus. Then, report the word error rate (WER)
@@ -13,19 +14,27 @@ import wer
 def score(ref_trn=None, hyp_trn=None):
     reference_string = ""
     hypothesis_string = ""
+    num_sentences = 0
     with open(ref_trn) as reference, open(hyp_trn) as hypothesis:
         for lineR, lineH in zip(reference, hypothesis):
-            reference_string = lineR
-            hypothesis_string = lineH
-            # get everything inside () tag is as id then remove it
+
+            id_ref_pattern = re.compile(r'\(.+\)')
+            id_ref_match = id_ref_pattern.search(lineR)
+            reference_string = lineR[:id_ref_match.start()]
+
+            id_hyp_pattern = re.compile(r'\(.+\)')
+            id_hyp_match = id_hyp_pattern.search(lineH)
+            hypothesis_string = lineH[:id_hyp_match.start()]
+                       
             # count how many words are there
-            #reference_string.removesuffix[:-20]
-            #reference_string = reference_string[:-20]
-            print(reference_string)
-            print(hypothesis_string)
+
+            print(reference_string + id_ref_match[0])
+            print(hypothesis_string + id_hyp_match[0])
             tokens, edits, deletions, insertions, substitutions = wer.string_edit_distance(
         ref=reference_string, hyp=hypothesis_string)
             print(tokens, edits, deletions, insertions, substitutions)
+            num_sentences += 1
+    print(num_sentences)
     return
 
 
